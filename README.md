@@ -3,5 +3,5 @@
 ## environment
 
 - Node.js,
-- Next.js
+- Next.js + TypeScript
 - yarn
