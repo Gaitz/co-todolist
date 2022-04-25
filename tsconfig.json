@@ -21,7 +21,10 @@
     "baseUrl": ".",
     "paths": {
       "@userAuthentication/*": [
-        "src/userAuthentication/*"
+        "src/features/userAuthentication/*"
+      ],
+      "@shared/*": [
+        "src/shared/*"
       ]
     },
   },
