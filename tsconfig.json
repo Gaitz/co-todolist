@@ -20,6 +20,9 @@
     "incremental": true,
     "baseUrl": ".",
     "paths": {
+      "@todoLists/*": [
+        "src/features/todoList/*"
+      ],
       "@userAuthentication/*": [
         "src/features/userAuthentication/*"
       ],
