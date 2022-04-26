@@ -1,7 +1,7 @@
-import type { NextPage } from 'next'
-import Head from 'next/head'
-import styles from '@shared/styles/Home.module.css'
-import UserAuthentication from '@userAuthentication/view/UserAuthentication'
+import type { NextPage } from "next";
+import Head from "next/head";
+import styles from "@shared/styles/Home.module.css";
+import UserAuthentication from "@userAuthentication/UserAuthentication";
 
 const Home: NextPage = () => {
   return (
@@ -13,13 +13,11 @@ const Home: NextPage = () => {
       </Head>
 
       <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to co-todolist
-        </h1>
+        <h1 className={styles.title}>Welcome to co-todolist</h1>
         <UserAuthentication />
       </main>
     </div>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;
