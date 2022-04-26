@@ -22,7 +22,7 @@ const UserAuthentication = () => {
   };
 
   if (isAuthenticated) {
-    return <h2>Login as ${userEmail}</h2>;
+    return <h2>Login as {userEmail}</h2>;
   }
 
   return (
