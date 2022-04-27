@@ -2,6 +2,7 @@ import styles from "./TodoListNavigation.module.css";
 import { RootState, useAppDispatch } from "@shared/store";
 import { addTodoList } from "@todoLists/todoListsSlice";
 import { useSelector } from "react-redux";
+import { socket } from "src/pages/_app";
 
 const TodoListNavigation = () => {
   const dispatch = useAppDispatch();
@@ -14,6 +15,7 @@ const TodoListNavigation = () => {
     if (isAuthenticated) {
       const userEmail = user.userEmail;
       dispatch(addTodoList({ userEmail }));
+      socket.emit("hello", `hello from ${userEmail}`);
     }
   };
 
