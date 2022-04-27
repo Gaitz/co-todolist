@@ -7,14 +7,21 @@ import {
 
 export type TodoListKey = string;
 
+export type TodoListMetadata = {
+  todoListOwner: UserEmail;
+};
+
 export type TodoItem = {
   description: string;
   id: string;
-  todoListOwner: UserEmail;
   creator: UserEmail;
+  isDone: boolean;
 };
 
-export type TodoList = TodoItem[];
+export type TodoList = {
+  metadata: TodoListMetadata;
+  todoItems: TodoItem[];
+};
 
 export interface TodoListState {
   currentTodoListKey: string;
@@ -33,34 +40,56 @@ export const todoListSlice = createSlice({
   initialState,
   reducers: {
     addTodoList: (state: TodoListState, action: PayloadAction<UserAccount>) => {
-      const userEmail = action.payload.userEmail;
-      if (userEmail !== "") {
-        if (state.todoLists[userEmail] === undefined) {
-          state.todoLists[userEmail] = {};
+      const owner = action.payload.userEmail;
+      if (owner !== "") {
+        if (state.todoLists[owner] === undefined) {
+          state.todoLists[owner] = {};
         }
 
         const todoListKey: TodoListKey =
           action.payload.userEmail + "-" + new Date().toISOString();
 
-        state.todoLists[userEmail][todoListKey] = [];
+        if (!state.todoLists[owner][todoListKey]) {
+          state.todoLists[owner][todoListKey] = {
+            metadata: { todoListOwner: owner },
+            todoItems: [],
+          } as TodoList;
+        }
         state.currentTodoListKey = todoListKey;
-        state.currentTodoListOwner = userEmail;
+        state.currentTodoListOwner = owner;
       }
     },
     addTodoItemToCurrentList: (
       state: TodoListState,
-      action: PayloadAction<TodoItem>
+      action: PayloadAction<Omit<TodoItem, "isDone">>
     ) => {
-      const { todoListOwner, creator, description, id } = action.payload;
+      const { creator, description, id } = action.payload;
+      const currentTodoListOwner = state.currentTodoListOwner;
       const currentTodoList =
-        state.todoLists?.[todoListOwner]?.[state.currentTodoListKey];
-      if (currentTodoList) {
-        currentTodoList.push({
-          todoListOwner,
+        state.todoLists?.[currentTodoListOwner]?.[state.currentTodoListKey];
+
+      if (currentTodoList.todoItems) {
+        currentTodoList.todoItems.push({
           creator,
           description,
           id,
+          isDone: false,
         });
+      }
+    },
+    toggleItemState: (
+      state: TodoListState,
+      action: PayloadAction<{ itemId: TodoItem["id"] }>
+    ) => {
+      const todoItems =
+        state.todoLists?.[state.currentTodoListOwner]?.[
+          state.currentTodoListKey
+        ]?.todoItems;
+      const modifiedTodoItem = todoItems.filter(
+        (item) => item.id === action.payload.itemId
+      )[0];
+      if (modifiedTodoItem) {
+        modifiedTodoItem.isDone = !modifiedTodoItem.isDone;
       }
     },
   },
@@ -75,20 +104,19 @@ export const addTodoItem =
   async (dispatch, getState) => {
     const rootState = getState();
     const creator = rootState.userAuthentication.userEmail;
-    const todoListOwner = rootState.todoList.currentTodoListOwner;
     const id = rootState.todoList.currentTodoListKey + new Date().toISOString();
 
     dispatch(
       addTodoItemToCurrentList({
         description,
-        todoListOwner,
         creator,
         id,
       })
     );
   };
 
-export const { addTodoList, addTodoItemToCurrentList } = todoListSlice.actions;
+export const { addTodoList, addTodoItemToCurrentList, toggleItemState } =
+  todoListSlice.actions;
 
 export default todoListSlice.reducer;
 
@@ -104,5 +132,12 @@ export const selectCurrentTodoList = createSelector(
   [selectTodoLists, selectCurrentTodoListOwner, selectCurrentTodoListKey],
   (todoLists, owner, currentKey) => {
     return todoLists?.[owner]?.[currentKey];
+  }
+);
+
+export const selectCurrentTodoItems = createSelector(
+  selectCurrentTodoList,
+  (todoList) => {
+    return todoList.todoItems;
   }
 );
