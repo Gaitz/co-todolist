@@ -29,14 +29,14 @@ const TodoListNavigation = () => {
       const todoList = todoLists[owner];
       console.log(todoList);
       return (
-        <p key={owner}>
-          {owner}
+        <section key={owner}>
+          <p>{owner}</p>
           <ul>
             {Object.keys(todoList).map((todoListKey: TodoListKey) => {
               return <li key={todoListKey}>{todoListKey}</li>;
             })}
           </ul>
-        </p>
+        </section>
       );
     });
   }

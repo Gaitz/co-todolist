@@ -1,19 +1,10 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from "next";
 import { Server } from "socket.io";
+import { ClientToServerEvents } from "@socket/socket-client";
+import { ServerToClientEvents, onConnection } from "@socket/socket-server";
 
-export type ServerToClientEvents = {
-  noArg: () => void;
-  basicEmit: (a: number, b: string, c: Buffer) => void;
-  withAck: (d: string, callback: (e: number) => void) => void;
-  hello: (msg: string) => void;
-};
-
-export type ClientToServerEvents = {
-  hello: (msg: string) => void;
-};
-
-export type InterServerEvents = {
+type InterServerEvents = {
   ping: () => void;
 };
 
@@ -29,13 +20,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     >(res.socket.server);
     socketServer = io;
 
-    io.on("connection", (socket) => {
-      console.log("connection created");
-      socket.on("hello", (msg) => {
-        console.log(msg);
-        socket.broadcast.emit("hello", `${msg} through server`);
-      });
-    });
+    io.on("connection", onConnection);
   }
 
   res.end();
