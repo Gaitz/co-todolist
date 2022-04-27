@@ -1,6 +1,12 @@
 import styles from "./TodoListNavigation.module.css";
 import { RootState, useAppDispatch } from "@shared/store";
-import { addTodoList, TodoListKey } from "@todoLists/todoListSlice";
+import {
+  selectTodoLists,
+  selectCurrentTodoListKey,
+  addTodoList,
+  TodoListKey,
+  switchTodoList,
+} from "@todoLists/todoListSlice";
 import { useSelector } from "react-redux";
 
 const TodoListNavigation = () => {
@@ -9,7 +15,8 @@ const TodoListNavigation = () => {
   const user = useSelector((state: RootState) => state.userAuthentication);
   const isAuthenticated = user.isAuthenticated;
 
-  const todoLists = useSelector((state: RootState) => state.todoList.todoLists);
+  const currentTodoListKey = useSelector(selectCurrentTodoListKey);
+  const todoLists = useSelector(selectTodoLists);
 
   const onCreateTodoList = (e: React.SyntheticEvent) => {
     e.preventDefault();
@@ -19,19 +26,37 @@ const TodoListNavigation = () => {
     }
   };
 
+  const onClickTodoList =
+    (owner: string, targetTodoListKey: TodoListKey) =>
+    (e: React.SyntheticEvent) => {
+      e.preventDefault();
+      dispatch(switchTodoList({ owner, targetTodoListKey }));
+    };
+
   let lists;
   if (Object.keys(todoLists).length === 0) {
     lists = <p>will list all todo lists</p>;
   } else {
     lists = Object.keys(todoLists).map((owner: string) => {
       const todoList = todoLists[owner];
-      console.log(todoList);
       return (
         <section key={owner}>
           <p>{owner}</p>
           <ul>
             {Object.keys(todoList).map((todoListKey: TodoListKey) => {
-              return <li key={todoListKey}>{todoListKey}</li>;
+              return (
+                <li
+                  key={todoListKey}
+                  onClick={onClickTodoList(owner, todoListKey)}
+                  className={
+                    todoListKey === currentTodoListKey
+                      ? styles.currentTodoList
+                      : styles.todoList
+                  }
+                >
+                  {todoListKey}
+                </li>
+              );
             })}
           </ul>
         </section>

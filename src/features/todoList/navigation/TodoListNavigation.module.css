@@ -5,3 +5,12 @@
 .nav ul {
   padding: 0;
 }
+
+.todoList {
+  margin-top: 0.5rem;
+}
+
+.currentTodoList {
+  composes: todoList;
+  color: red;
+}

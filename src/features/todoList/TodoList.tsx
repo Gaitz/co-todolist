@@ -46,8 +46,6 @@ const TodoList = () => {
     return <p>Please create a todo list first</p>;
   }
 
-  console.log("current", currentTodoList);
-
   const addTodoItemHandler = (event: React.SyntheticEvent) => {
     event.preventDefault();
     const target = event.target as typeof event.target & {

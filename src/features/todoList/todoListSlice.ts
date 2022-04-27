@@ -59,6 +59,19 @@ export const todoListSlice = createSlice({
         state.currentTodoListOwner = owner;
       }
     },
+    switchTodoList: (
+      state: TodoListState,
+      action: PayloadAction<{
+        targetTodoListKey: TodoListKey;
+        owner: TodoListMetadata["todoListOwner"];
+      }>
+    ) => {
+      const { targetTodoListKey, owner } = action.payload;
+      if (state.currentTodoListKey !== targetTodoListKey) {
+        state.currentTodoListKey = targetTodoListKey;
+        state.currentTodoListOwner = owner;
+      }
+    },
     addTodoItemToCurrentList: (
       state: TodoListState,
       action: PayloadAction<Omit<TodoItem, "isDone">>
@@ -115,8 +128,12 @@ export const addTodoItem =
     );
   };
 
-export const { addTodoList, addTodoItemToCurrentList, toggleItemState } =
-  todoListSlice.actions;
+export const {
+  addTodoList,
+  addTodoItemToCurrentList,
+  toggleItemState,
+  switchTodoList,
+} = todoListSlice.actions;
 
 export default todoListSlice.reducer;
 
