@@ -1,14 +1,14 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-type UserEmail = string;
-type TodoListKey = string;
+export type UserEmail = string;
+export type TodoListKey = string;
 
-type TodoItem = {
+export type TodoItem = {
   description: string;
   cost: number;
   id: string;
 };
-type TodoList = TodoItem[];
+export type TodoList = TodoItem[];
 
 export interface TodoListsState {
   currentTodoList: string;
