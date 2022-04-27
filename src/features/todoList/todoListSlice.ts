@@ -35,76 +35,86 @@ const initialState: TodoListState = {
   todoLists: {},
 };
 
+const addTodoListReducer = (
+  state: TodoListState,
+  action: PayloadAction<UserAccount>
+) => {
+  const owner = action.payload.userEmail;
+  if (owner !== "") {
+    if (state.todoLists[owner] === undefined) {
+      state.todoLists[owner] = {};
+    }
+
+    const todoListKey: TodoListKey =
+      action.payload.userEmail + "-" + new Date().toISOString();
+
+    if (!state.todoLists[owner][todoListKey]) {
+      state.todoLists[owner][todoListKey] = {
+        metadata: { todoListOwner: owner },
+        todoItems: [],
+      } as TodoList;
+    }
+    state.currentTodoListKey = todoListKey;
+    state.currentTodoListOwner = owner;
+  }
+};
+
+const switchTodoListReducer = (
+  state: TodoListState,
+  action: PayloadAction<{
+    targetTodoListKey: TodoListKey;
+    owner: TodoListMetadata["todoListOwner"];
+  }>
+) => {
+  const { targetTodoListKey, owner } = action.payload;
+  if (state.currentTodoListKey !== targetTodoListKey) {
+    state.currentTodoListKey = targetTodoListKey;
+    state.currentTodoListOwner = owner;
+  }
+};
+
+const addTodoItemToCurrentListReducer = (
+  state: TodoListState,
+  action: PayloadAction<Omit<TodoItem, "isDone">>
+) => {
+  const { creator, description, id } = action.payload;
+  const currentTodoListOwner = state.currentTodoListOwner;
+  const currentTodoList =
+    state.todoLists?.[currentTodoListOwner]?.[state.currentTodoListKey];
+
+  if (currentTodoList.todoItems) {
+    currentTodoList.todoItems.push({
+      creator,
+      description,
+      id,
+      isDone: false,
+    });
+  }
+};
+
+const toggleItemStateReducer = (
+  state: TodoListState,
+  action: PayloadAction<{ itemId: TodoItem["id"] }>
+) => {
+  const todoItems =
+    state.todoLists?.[state.currentTodoListOwner]?.[state.currentTodoListKey]
+      ?.todoItems;
+  const modifiedTodoItem = todoItems.filter(
+    (item) => item.id === action.payload.itemId
+  )[0];
+  if (modifiedTodoItem) {
+    modifiedTodoItem.isDone = !modifiedTodoItem.isDone;
+  }
+};
+
 export const todoListSlice = createSlice({
   name: "todoList",
   initialState,
   reducers: {
-    addTodoList: (state: TodoListState, action: PayloadAction<UserAccount>) => {
-      const owner = action.payload.userEmail;
-      if (owner !== "") {
-        if (state.todoLists[owner] === undefined) {
-          state.todoLists[owner] = {};
-        }
-
-        const todoListKey: TodoListKey =
-          action.payload.userEmail + "-" + new Date().toISOString();
-
-        if (!state.todoLists[owner][todoListKey]) {
-          state.todoLists[owner][todoListKey] = {
-            metadata: { todoListOwner: owner },
-            todoItems: [],
-          } as TodoList;
-        }
-        state.currentTodoListKey = todoListKey;
-        state.currentTodoListOwner = owner;
-      }
-    },
-    switchTodoList: (
-      state: TodoListState,
-      action: PayloadAction<{
-        targetTodoListKey: TodoListKey;
-        owner: TodoListMetadata["todoListOwner"];
-      }>
-    ) => {
-      const { targetTodoListKey, owner } = action.payload;
-      if (state.currentTodoListKey !== targetTodoListKey) {
-        state.currentTodoListKey = targetTodoListKey;
-        state.currentTodoListOwner = owner;
-      }
-    },
-    addTodoItemToCurrentList: (
-      state: TodoListState,
-      action: PayloadAction<Omit<TodoItem, "isDone">>
-    ) => {
-      const { creator, description, id } = action.payload;
-      const currentTodoListOwner = state.currentTodoListOwner;
-      const currentTodoList =
-        state.todoLists?.[currentTodoListOwner]?.[state.currentTodoListKey];
-
-      if (currentTodoList.todoItems) {
-        currentTodoList.todoItems.push({
-          creator,
-          description,
-          id,
-          isDone: false,
-        });
-      }
-    },
-    toggleItemState: (
-      state: TodoListState,
-      action: PayloadAction<{ itemId: TodoItem["id"] }>
-    ) => {
-      const todoItems =
-        state.todoLists?.[state.currentTodoListOwner]?.[
-          state.currentTodoListKey
-        ]?.todoItems;
-      const modifiedTodoItem = todoItems.filter(
-        (item) => item.id === action.payload.itemId
-      )[0];
-      if (modifiedTodoItem) {
-        modifiedTodoItem.isDone = !modifiedTodoItem.isDone;
-      }
-    },
+    addTodoList: addTodoListReducer,
+    switchTodoList: switchTodoListReducer,
+    addTodoItemToCurrentList: addTodoItemToCurrentListReducer,
+    toggleItemState: toggleItemStateReducer,
   },
 });
 

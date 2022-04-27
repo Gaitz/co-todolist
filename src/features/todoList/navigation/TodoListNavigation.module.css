@@ -12,5 +12,5 @@
 
 .currentTodoList {
   composes: todoList;
-  color: red;
+  color: royalblue;
 }
