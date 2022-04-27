@@ -1,4 +1,4 @@
-import { signIn } from "./userAuthenticationSlice";
+import { signInServer } from "./userAuthenticationSlice";
 import { useAppDispatch, RootState } from "@shared/store";
 import { useSelector } from "react-redux";
 
@@ -18,7 +18,7 @@ const UserAuthentication = () => {
       userEmail: { value: string };
     };
     const userEmail = target.userEmail.value;
-    dispatch(signIn({ userEmail }));
+    dispatch(signInServer({ userEmail }));
   };
 
   if (isAuthenticated) {

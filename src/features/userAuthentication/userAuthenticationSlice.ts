@@ -1,5 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { RootState } from "@shared/store";
+import { RootState, AppThunk } from "@shared/store";
+import { restoreTodoLists } from "@todoLists/todoListSlice";
+import { socket } from "src/pages/_app";
 
 export interface UserAuthenticationState {
   isAuthenticated: boolean;
@@ -36,6 +38,19 @@ export const userAuthenticationSlice = createSlice({
     },
   },
 });
+
+export const signInServer =
+  ({ userEmail }: UserAccount): AppThunk =>
+  async (dispatch, getState) => {
+    const rootState = getState();
+    if (!rootState.userAuthentication.isAuthenticated) {
+      socket.emit("signIn", userEmail, (todoLists) => {
+        console.log(todoLists);
+        dispatch(restoreTodoLists(todoLists));
+        dispatch(signIn({ userEmail }));
+      });
+    }
+  };
 
 export const { signIn, signOut } = userAuthenticationSlice.actions;
 

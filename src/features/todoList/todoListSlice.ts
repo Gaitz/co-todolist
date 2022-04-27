@@ -29,10 +29,19 @@ export interface TodoListState {
   todoLists: Record<UserEmail, Record<TodoListKey, TodoList>>;
 }
 
-const initialState: TodoListState = {
+export type TodoLists = Pick<TodoListState, "todoLists">;
+
+export const initialState: TodoListState = {
   currentTodoListKey: "",
   currentTodoListOwner: "",
   todoLists: {},
+};
+
+const restoreTodoListsReducer = (
+  state: TodoListState,
+  action: PayloadAction<TodoLists>
+) => {
+  state.todoLists = action.payload.todoLists;
 };
 
 const addTodoListReducer = (
@@ -111,6 +120,7 @@ export const todoListSlice = createSlice({
   name: "todoList",
   initialState,
   reducers: {
+    restoreTodoLists: restoreTodoListsReducer,
     addTodoList: addTodoListReducer,
     switchTodoList: switchTodoListReducer,
     addTodoItemToCurrentList: addTodoItemToCurrentListReducer,
@@ -139,6 +149,7 @@ export const addTodoItem =
   };
 
 export const {
+  restoreTodoLists,
   addTodoList,
   addTodoItemToCurrentList,
   toggleItemState,

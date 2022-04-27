@@ -1,8 +1,8 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from "next";
 import { Server } from "socket.io";
-import { ClientToServerEvents } from "@socket/socket-client";
-import { ServerToClientEvents, onConnection } from "@socket/socket-server";
+import { ServerToClientEvents } from "@socket/socket-client";
+import { ClientToServerEvents, onConnection } from "@socket/socket-server";
 
 type InterServerEvents = {
   ping: () => void;

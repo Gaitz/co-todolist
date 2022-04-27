@@ -4,7 +4,8 @@ import store from "@shared/store";
 import { Provider } from "react-redux";
 import { useEffect } from "react";
 import { io, Socket } from "socket.io-client";
-import { ServerToClientEvents, ClientToServerEvents } from "./api/socket";
+import { ServerToClientEvents } from "@socket/socket-client";
+import { ClientToServerEvents } from "@socket/socket-server";
 
 export let socket: Socket<ServerToClientEvents, ClientToServerEvents>;
 
@@ -15,11 +16,12 @@ function MyApp({ Component, pageProps }: AppProps) {
       socket = io();
 
       socket.on("connect", () => {
-        console.log("connected");
-        socket.emit("hello", "hello from client");
+        console.log("socket connected");
+
+        socket.emit("helloToServer", "hello from client");
       });
 
-      socket.on("hello", (msg) => {
+      socket.on("helloFromServer", (msg: string) => {
         console.log(msg);
       });
     };
