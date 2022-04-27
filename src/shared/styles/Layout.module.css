@@ -17,6 +17,16 @@
 }
 
 .todoListContainer {
+  margin-top: 2rem;
   display: flex;
   align-items: baseline;
+  width: 90%;
+}
+
+.currentTodoList {
+  flex: 2 1 80%
+}
+
+.todoListsNavigation {
+  flex: 1 0 20%
 }

@@ -1,6 +1,6 @@
 import styles from "./TodoListNavigation.module.css";
 import { RootState, useAppDispatch } from "@shared/store";
-import { addTodoList, TodoListKey } from "@todoLists/todoListsSlice";
+import { addTodoList, TodoListKey } from "@todoLists/todoListSlice";
 import { useSelector } from "react-redux";
 
 const TodoListNavigation = () => {
@@ -9,9 +9,7 @@ const TodoListNavigation = () => {
   const user = useSelector((state: RootState) => state.userAuthentication);
   const isAuthenticated = user.isAuthenticated;
 
-  const todoLists = useSelector(
-    (state: RootState) => state.todoLists.todoLists
-  );
+  const todoLists = useSelector((state: RootState) => state.todoList.todoLists);
 
   const onCreateTodoList = (e: React.SyntheticEvent) => {
     e.preventDefault();

@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { RootState } from "@shared/store";
 
 export interface UserAuthenticationState {
   isAuthenticated: boolean;
@@ -10,8 +11,10 @@ const initialState: UserAuthenticationState = {
   userEmail: "",
 };
 
-type UserAccount = {
-  userEmail: string;
+export type UserEmail = string;
+
+export type UserAccount = {
+  userEmail: UserEmail;
 };
 
 export const userAuthenticationSlice = createSlice({
@@ -37,3 +40,6 @@ export const userAuthenticationSlice = createSlice({
 export const { signIn, signOut } = userAuthenticationSlice.actions;
 
 export default userAuthenticationSlice.reducer;
+
+export const selectUserEmail = (state: RootState) =>
+  state.userAuthentication.userEmail;

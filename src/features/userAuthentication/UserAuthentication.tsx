@@ -12,7 +12,7 @@ const UserAuthentication = () => {
   const isAuthenticated = userAuthentication.isAuthenticated;
   const userEmail = userAuthentication.userEmail;
 
-  const submit = (e: React.SyntheticEvent) => {
+  const signInHandler = (e: React.SyntheticEvent) => {
     e.preventDefault();
     const target = e.target as typeof e.target & {
       userEmail: { value: string };
@@ -26,7 +26,7 @@ const UserAuthentication = () => {
   }
 
   return (
-    <form onSubmit={submit}>
+    <form onSubmit={signInHandler}>
       <label htmlFor="userEmail">Email:</label>
       <input name="userEmail" type={"email"}></input>
       <button disabled={isAuthenticated}>Sign In</button>

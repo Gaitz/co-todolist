@@ -18,8 +18,12 @@ const Home: NextPage = () => {
         <h1 className={styles.title}>Welcome to co-todolist</h1>
         <UserAuthentication />
         <section className={styles.todoListContainer}>
-          <TodoList />
-          <TodoListNavigation />
+          <article className={styles.currentTodoList}>
+            <TodoList />
+          </article>
+          <nav className={styles.todoListsNavigation}>
+            <TodoListNavigation />
+          </nav>
         </section>
       </main>
     </div>
