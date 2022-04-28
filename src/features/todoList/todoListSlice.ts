@@ -46,9 +46,9 @@ const restoreTodoListsReducer = (
   state.todoLists = action.payload.todoLists;
 };
 
-export const newTodoListHelper =
-  (state: TodoLists) =>
-  ({ owner, todoListKey }: TodoListMetadata) => {
+export const newTodoListTo =
+  ({ owner, todoListKey }: TodoListMetadata) =>
+  (state: TodoLists) => {
     if (owner !== "" && todoListKey !== "") {
       if (state.todoLists[owner] === undefined) {
         state.todoLists[owner] = {};
@@ -66,7 +66,7 @@ const newTodoListReducer = (
   action: PayloadAction<TodoListMetadata>
 ) => {
   const { owner, todoListKey } = action.payload;
-  newTodoListHelper(state)({ owner, todoListKey });
+  newTodoListTo({ owner, todoListKey })(state);
 };
 
 const switchTodoListReducer = (
@@ -83,23 +83,44 @@ const switchTodoListReducer = (
   }
 };
 
-const addTodoItemToCurrentListReducer = (
-  state: TodoListState,
-  action: PayloadAction<Omit<TodoItem, "isDone">>
-) => {
-  const { creator, description, id } = action.payload;
-  const currentTodoListOwner = state.currentTodoListOwner;
-  const currentTodoList =
-    state.todoLists?.[currentTodoListOwner]?.[state.currentTodoListKey];
+export type NewTodoItemTarget = {
+  targetOwner: UserEmail;
+  targetListKey: TodoListKey;
+};
 
-  if (currentTodoList.todoItems) {
-    currentTodoList.todoItems.push({
-      creator,
-      description,
-      id,
-      isDone: false,
-    });
-  }
+export type NewTodoItemInputs = Omit<TodoItem, "isDone"> & NewTodoItemTarget;
+
+export const newTodoItemTo =
+  ({
+    creator,
+    description,
+    id,
+    targetListKey,
+    targetOwner,
+  }: NewTodoItemInputs) =>
+  (state: TodoLists) => {
+    const targetTodoList = state.todoLists?.[targetOwner]?.[targetListKey];
+
+    if (targetTodoList?.todoItems) {
+      targetTodoList.todoItems.push({
+        creator,
+        description,
+        id,
+        isDone: false,
+      });
+    }
+  };
+
+const newTodoItemReducer = (
+  state: TodoListState,
+  action: PayloadAction<NewTodoItemInputs>
+) => {
+  const { creator, description, id, targetListKey, targetOwner } =
+    action.payload;
+
+  newTodoItemTo({ creator, description, id, targetListKey, targetOwner })(
+    state
+  );
 };
 
 const toggleItemStateReducer = (
@@ -124,7 +145,7 @@ export const todoListSlice = createSlice({
     restoreTodoLists: restoreTodoListsReducer,
     newTodoList: newTodoListReducer,
     switchTodoList: switchTodoListReducer,
-    addTodoItemToCurrentList: addTodoItemToCurrentListReducer,
+    newTodoItem: newTodoItemReducer,
     toggleItemState: toggleItemStateReducer,
   },
 });
@@ -134,7 +155,7 @@ export default todoListSlice.reducer;
 export const {
   restoreTodoLists,
   newTodoList,
-  addTodoItemToCurrentList,
+  newTodoItem,
   toggleItemState,
   switchTodoList,
 } = todoListSlice.actions;
@@ -165,20 +186,21 @@ export type TodoItemFormInputs = {
   description: string;
 };
 
-export const addTodoItem =
-  ({ description }: TodoItemFormInputs): AppThunk =>
+export const addTodoItemToServer =
+  ({
+    description,
+    targetListKey,
+    targetOwner,
+  }: TodoItemFormInputs & NewTodoItemTarget): AppThunk =>
   async (dispatch, getState) => {
     const rootState = getState();
     const creator = rootState.userAuthentication.userEmail;
-    const id = rootState.todoList.currentTodoListKey + new Date().toISOString();
-
-    dispatch(
-      addTodoItemToCurrentList({
-        description,
-        creator,
-        id,
-      })
-    );
+    socket.emit("addTodoItem", {
+      creator,
+      description,
+      targetListKey,
+      targetOwner,
+    });
   };
 
 export const selectCurrentTodoListOwner = (state: RootState) =>

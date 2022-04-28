@@ -3,7 +3,7 @@ import {
   selectCurrentTodoList,
   selectCurrentTodoListKey,
   selectCurrentTodoItems,
-  addTodoItem,
+  addTodoItemToServer,
   toggleItemState,
   TodoItem,
 } from "./todoListSlice";
@@ -52,7 +52,14 @@ const TodoList = () => {
       description: { value: string };
     };
     const description = target.description.value;
-    dispatch(addTodoItem({ description }));
+    const { owner, todoListKey } = currentTodoList.metadata;
+    dispatch(
+      addTodoItemToServer({
+        description,
+        targetListKey: todoListKey,
+        targetOwner: owner,
+      })
+    );
     target.description.value = "";
   };
 

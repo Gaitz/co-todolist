@@ -8,11 +8,14 @@ type InterServerEvents = {
   ping: () => void;
 };
 
-let socketServer: Server;
+export let socketServer: Server;
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   if (socketServer === undefined) {
-    const io = new Server<
+    const io = await new Server<
       ClientToServerEvents,
       ServerToClientEvents,
       InterServerEvents

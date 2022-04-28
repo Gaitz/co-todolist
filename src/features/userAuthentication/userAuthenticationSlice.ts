@@ -43,7 +43,8 @@ export const signInServer =
   ({ userEmail }: UserAccount): AppThunk =>
   async (dispatch, getState) => {
     const rootState = getState();
-    if (!rootState.userAuthentication.isAuthenticated) {
+    if (rootState.userAuthentication.isAuthenticated === false) {
+      socket.connect();
       socket.emit("signIn", userEmail, (todoLists) => {
         dispatch(restoreTodoLists(todoLists));
         dispatch(signIn({ userEmail }));
