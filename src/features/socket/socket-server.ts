@@ -6,10 +6,7 @@ import { UserEmail } from "@userAuthentication/userAuthenticationSlice";
 export type ClientToServerEvents = {
   helloToServer: (msg: string) => void;
   signIn: (userEmail: string, res: (todoLists: TodoLists) => void) => void;
-  addTodoList: (
-    owner: UserEmail,
-    res: (todoListKey: TodoListKey) => void
-  ) => void;
+  addTodoList: (owner: UserEmail) => void;
 };
 
 let todoListState: TodoLists = { todoLists: {} };
@@ -31,10 +28,9 @@ export const onConnection = (
     res(todoListState);
   });
 
-  socket.on("addTodoList", (owner, res) => {
+  socket.on("addTodoList", (owner) => {
     const todoListKey: TodoListKey = owner + "-" + new Date().toISOString();
-    console.log("creat todo list,", todoListKey);
-    res(todoListKey);
-    // socket.broadcast.emit("addTodoList");
+    console.log("create todo list,", todoListKey);
+    socket.broadcast.emit("addTodoList", { owner, todoListKey });
   });
 };

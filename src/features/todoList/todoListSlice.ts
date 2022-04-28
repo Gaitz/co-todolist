@@ -4,7 +4,7 @@ import {
   UserAccount,
   UserEmail,
 } from "@userAuthentication/userAuthenticationSlice";
-import { socket } from "src/pages/_app";
+import { socket } from "@socket/socket-client";
 
 export type TodoListKey = string;
 
@@ -46,7 +46,7 @@ const restoreTodoListsReducer = (
   state.todoLists = action.payload.todoLists;
 };
 
-const addTodoListReducer = (
+const newTodoListReducer = (
   state: TodoListState,
   action: PayloadAction<TodoListMetadata>
 ) => {
@@ -60,8 +60,6 @@ const addTodoListReducer = (
       metadata: { owner, todoListKey },
       todoItems: [],
     } as TodoList;
-    state.currentTodoListKey = todoListKey;
-    state.currentTodoListOwner = owner;
   }
 };
 
@@ -118,7 +116,7 @@ export const todoListSlice = createSlice({
   initialState,
   reducers: {
     restoreTodoLists: restoreTodoListsReducer,
-    addTodoList: addTodoListReducer,
+    newTodoList: newTodoListReducer,
     switchTodoList: switchTodoListReducer,
     addTodoItemToCurrentList: addTodoItemToCurrentListReducer,
     toggleItemState: toggleItemStateReducer,
@@ -129,27 +127,31 @@ export default todoListSlice.reducer;
 
 export const {
   restoreTodoLists,
-  addTodoList,
+  newTodoList,
   addTodoItemToCurrentList,
   toggleItemState,
   switchTodoList,
 } = todoListSlice.actions;
 
+export const addTodoList =
+  ({ owner, todoListKey }: TodoListMetadata): AppThunk =>
+  async (dispatch, getState) => {
+    if (owner === "" || todoListKey === "") return;
+
+    const user = getState().userAuthentication.userEmail;
+    dispatch(newTodoList({ owner, todoListKey }));
+
+    if (user === owner) {
+      dispatch(switchTodoList({ targetTodoListKey: todoListKey, owner }));
+    }
+  };
+
 export const addTodoListToServer =
   ({ userEmail }: UserAccount): AppThunk =>
-  async (dispatch) => {
+  async () => {
     const owner = userEmail;
     if (owner !== "") {
-      const todoListKey = await new Promise<TodoListKey>((resolve) => {
-        socket.emit("addTodoList", owner, (res) => {
-          resolve(res);
-        });
-      });
-
-      console.log("todoListKey", todoListKey);
-      if (todoListKey) {
-        dispatch(addTodoList({ owner, todoListKey }));
-      }
+      socket.emit("addTodoList", owner);
     }
   };
 

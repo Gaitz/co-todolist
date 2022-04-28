@@ -3,7 +3,6 @@ import { RootState, useAppDispatch } from "@shared/store";
 import {
   selectTodoLists,
   selectCurrentTodoListKey,
-  addTodoList,
   TodoListKey,
   switchTodoList,
   addTodoListToServer,

@@ -4,8 +4,19 @@ import styles from "@shared/styles/Layout.module.css";
 import UserAuthentication from "@userAuthentication/UserAuthentication";
 import TodoList from "src/features/todoList/TodoList";
 import TodoListNavigation from "src/features/todoList/navigation/TodoListNavigation";
+import { useEffect } from "react";
+import { socket, initializeSocket } from "@socket/socket-client";
+import { useAppDispatch } from "@shared/store";
 
 const Home: NextPage = () => {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    if (!socket) {
+      initializeSocket(dispatch);
+    }
+  }, [dispatch]);
+
   return (
     <div className={styles.container}>
       <Head>

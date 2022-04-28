@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState, AppThunk } from "@shared/store";
 import { restoreTodoLists } from "@todoLists/todoListSlice";
-import { socket } from "src/pages/_app";
+import { socket } from "@socket/socket-client";
 
 export interface UserAuthenticationState {
   isAuthenticated: boolean;
