@@ -23,8 +23,6 @@ export const initializeSocket = async (dispatch: AppDispatch) => {
 
   socket.on("connect", () => {
     console.log("socket connected");
-
-    socket.emit("helloToServer", "hello from client");
   });
 
   socket.on("helloFromServer", (msg: string) => {

@@ -28,7 +28,6 @@ export const onConnection = (
 
   socket.on("helloToServer", (msg) => {
     console.log(msg);
-    // socket.broadcast.emit("helloFromServer", `${msg} through server`);
   });
 
   socket.on("signIn", (userEmail, res) => {
