@@ -1,0 +1,15 @@
+.addTodoItemForm {
+  margin-top: 1rem;
+}
+
+.todoItems {
+  padding-left: 0;
+}
+
+.todoItems li {
+  list-style-type: none;
+}
+
+.todoItems > li > input {
+  margin-right: 0.5rem;
+}

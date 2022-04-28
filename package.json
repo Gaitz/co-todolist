@@ -1,6 +1,6 @@
 {
   "name": "co-todolist",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -9,9 +9,13 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@reduxjs/toolkit": "^1.8.1",
     "next": "12.1.5",
     "react": "18.0.0",
-    "react-dom": "18.0.0"
+    "react-dom": "18.0.0",
+    "react-redux": "^8.0.1",
+    "socket.io": "^4.5.0",
+    "socket.io-client": "^4.5.0"
   },
   "devDependencies": {
     "@types/node": "17.0.26",
