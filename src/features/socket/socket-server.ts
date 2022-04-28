@@ -1,7 +1,12 @@
 import { Socket } from "socket.io";
 import { ServerToClientEvents } from "./socket-client";
-import { TodoListKey, TodoLists } from "@todoLists/todoListSlice";
+import {
+  newTodoListHelper,
+  TodoListKey,
+  TodoLists,
+} from "@todoLists/todoListSlice";
 import { UserEmail } from "@userAuthentication/userAuthenticationSlice";
+import { prependListener } from "process";
 
 export type ClientToServerEvents = {
   helloToServer: (msg: string) => void;
@@ -9,7 +14,7 @@ export type ClientToServerEvents = {
   addTodoList: (owner: UserEmail) => void;
 };
 
-let todoListState: TodoLists = { todoLists: {} };
+let persistedTodoLists: TodoLists = { todoLists: {} };
 
 export const onConnection = (
   socket: Socket<ClientToServerEvents, ServerToClientEvents>
@@ -25,12 +30,13 @@ export const onConnection = (
   socket.on("signIn", (userEmail, res) => {
     // @ts-ignore
     socket.user = userEmail;
-    res(todoListState);
+    res(persistedTodoLists);
   });
 
   socket.on("addTodoList", (owner) => {
     const todoListKey: TodoListKey = owner + "-" + new Date().toISOString();
     console.log("create todo list,", todoListKey);
     socket.broadcast.emit("addTodoList", { owner, todoListKey });
+    newTodoListHelper(persistedTodoLists)({ owner, todoListKey });
   });
 };

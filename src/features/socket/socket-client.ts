@@ -27,7 +27,6 @@ export const initializeSocket = async (dispatch: AppDispatch) => {
   });
 
   socket.on("addTodoList", (todoListMetadata) => {
-    console.log("addTodoList event", todoListMetadata);
     dispatch(addTodoList(todoListMetadata));
   });
 };

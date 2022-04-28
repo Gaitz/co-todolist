@@ -46,21 +46,27 @@ const restoreTodoListsReducer = (
   state.todoLists = action.payload.todoLists;
 };
 
+export const newTodoListHelper =
+  (state: TodoLists) =>
+  ({ owner, todoListKey }: TodoListMetadata) => {
+    if (owner !== "" && todoListKey !== "") {
+      if (state.todoLists[owner] === undefined) {
+        state.todoLists[owner] = {};
+      }
+
+      state.todoLists[owner][todoListKey] = {
+        metadata: { owner, todoListKey },
+        todoItems: [],
+      } as TodoList;
+    }
+  };
+
 const newTodoListReducer = (
   state: TodoListState,
   action: PayloadAction<TodoListMetadata>
 ) => {
   const { owner, todoListKey } = action.payload;
-  if (owner !== "" && todoListKey !== "") {
-    if (state.todoLists[owner] === undefined) {
-      state.todoLists[owner] = {};
-    }
-
-    state.todoLists[owner][todoListKey] = {
-      metadata: { owner, todoListKey },
-      todoItems: [],
-    } as TodoList;
-  }
+  newTodoListHelper(state)({ owner, todoListKey });
 };
 
 const switchTodoListReducer = (
