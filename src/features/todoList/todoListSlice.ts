@@ -4,11 +4,13 @@ import {
   UserAccount,
   UserEmail,
 } from "@userAuthentication/userAuthenticationSlice";
+import { socket } from "src/pages/_app";
 
 export type TodoListKey = string;
 
 export type TodoListMetadata = {
-  todoListOwner: UserEmail;
+  owner: UserEmail;
+  todoListKey: string;
 };
 
 export type TodoItem = {
@@ -46,23 +48,18 @@ const restoreTodoListsReducer = (
 
 const addTodoListReducer = (
   state: TodoListState,
-  action: PayloadAction<UserAccount>
+  action: PayloadAction<TodoListMetadata>
 ) => {
-  const owner = action.payload.userEmail;
-  if (owner !== "") {
+  const { owner, todoListKey } = action.payload;
+  if (owner !== "" && todoListKey !== "") {
     if (state.todoLists[owner] === undefined) {
       state.todoLists[owner] = {};
     }
 
-    const todoListKey: TodoListKey =
-      action.payload.userEmail + "-" + new Date().toISOString();
-
-    if (!state.todoLists[owner][todoListKey]) {
-      state.todoLists[owner][todoListKey] = {
-        metadata: { todoListOwner: owner },
-        todoItems: [],
-      } as TodoList;
-    }
+    state.todoLists[owner][todoListKey] = {
+      metadata: { owner, todoListKey },
+      todoItems: [],
+    } as TodoList;
     state.currentTodoListKey = todoListKey;
     state.currentTodoListOwner = owner;
   }
@@ -72,7 +69,7 @@ const switchTodoListReducer = (
   state: TodoListState,
   action: PayloadAction<{
     targetTodoListKey: TodoListKey;
-    owner: TodoListMetadata["todoListOwner"];
+    owner: TodoListMetadata["owner"];
   }>
 ) => {
   const { targetTodoListKey, owner } = action.payload;
@@ -128,6 +125,34 @@ export const todoListSlice = createSlice({
   },
 });
 
+export default todoListSlice.reducer;
+
+export const {
+  restoreTodoLists,
+  addTodoList,
+  addTodoItemToCurrentList,
+  toggleItemState,
+  switchTodoList,
+} = todoListSlice.actions;
+
+export const addTodoListToServer =
+  ({ userEmail }: UserAccount): AppThunk =>
+  async (dispatch) => {
+    const owner = userEmail;
+    if (owner !== "") {
+      const todoListKey = await new Promise<TodoListKey>((resolve) => {
+        socket.emit("addTodoList", owner, (res) => {
+          resolve(res);
+        });
+      });
+
+      console.log("todoListKey", todoListKey);
+      if (todoListKey) {
+        dispatch(addTodoList({ owner, todoListKey }));
+      }
+    }
+  };
+
 export type TodoItemFormInputs = {
   description: string;
 };
@@ -147,16 +172,6 @@ export const addTodoItem =
       })
     );
   };
-
-export const {
-  restoreTodoLists,
-  addTodoList,
-  addTodoItemToCurrentList,
-  toggleItemState,
-  switchTodoList,
-} = todoListSlice.actions;
-
-export default todoListSlice.reducer;
 
 export const selectCurrentTodoListOwner = (state: RootState) =>
   state.todoList.currentTodoListOwner;

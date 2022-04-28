@@ -45,7 +45,6 @@ export const signInServer =
     const rootState = getState();
     if (!rootState.userAuthentication.isAuthenticated) {
       socket.emit("signIn", userEmail, (todoLists) => {
-        console.log(todoLists);
         dispatch(restoreTodoLists(todoLists));
         dispatch(signIn({ userEmail }));
       });

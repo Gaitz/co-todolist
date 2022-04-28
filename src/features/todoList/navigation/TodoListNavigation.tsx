@@ -6,6 +6,7 @@ import {
   addTodoList,
   TodoListKey,
   switchTodoList,
+  addTodoListToServer,
 } from "@todoLists/todoListSlice";
 import { useSelector } from "react-redux";
 
@@ -22,7 +23,7 @@ const TodoListNavigation = () => {
     e.preventDefault();
     if (isAuthenticated) {
       const userEmail = user.userEmail;
-      dispatch(addTodoList({ userEmail }));
+      dispatch(addTodoListToServer({ userEmail }));
     }
   };
 
