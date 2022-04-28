@@ -10,7 +10,7 @@ export type TodoListKey = string;
 
 export type TodoListMetadata = {
   owner: UserEmail;
-  todoListKey: string;
+  todoListKey: TodoListKey;
 };
 
 export type TodoItem = {
@@ -26,7 +26,7 @@ export type TodoList = {
 };
 
 export interface TodoListState {
-  currentTodoListKey: string;
+  currentTodoListKey: TodoListKey;
   currentTodoListOwner: UserEmail;
   todoLists: Record<UserEmail, Record<TodoListKey, TodoList>>;
 }
@@ -88,7 +88,7 @@ export type NewTodoItemTarget = {
   targetListKey: TodoListKey;
 };
 
-export type NewTodoItemInputs = Omit<TodoItem, "isDone"> & NewTodoItemTarget;
+export type NewTodoItemInput = Omit<TodoItem, "isDone"> & NewTodoItemTarget;
 
 export const newTodoItemTo =
   ({
@@ -97,7 +97,7 @@ export const newTodoItemTo =
     id,
     targetListKey,
     targetOwner,
-  }: NewTodoItemInputs) =>
+  }: NewTodoItemInput) =>
   (state: TodoLists) => {
     const targetTodoList = state.todoLists?.[targetOwner]?.[targetListKey];
 
@@ -113,7 +113,7 @@ export const newTodoItemTo =
 
 const newTodoItemReducer = (
   state: TodoListState,
-  action: PayloadAction<NewTodoItemInputs>
+  action: PayloadAction<NewTodoItemInput>
 ) => {
   const { creator, description, id, targetListKey, targetOwner } =
     action.payload;
@@ -138,6 +138,24 @@ const toggleItemStateReducer = (
   }
 };
 
+export const updateTodoItemTo =
+  ({ targetOwner, targetTodoListKey, updateTodoItem }: UpdateTodoItemInput) =>
+  (state: TodoLists) => {
+    const targetTodoList = state.todoLists?.[targetOwner]?.[targetTodoListKey];
+    if (targetTodoList) {
+      targetTodoList.todoItems = targetTodoList.todoItems.map((item) =>
+        item.id === updateTodoItem.id ? updateTodoItem : item
+      );
+    }
+  };
+
+const updateTodoItemReducer = (
+  state: TodoListState,
+  action: PayloadAction<UpdateTodoItemInput>
+) => {
+  updateTodoItemTo(action.payload)(state);
+};
+
 export const todoListSlice = createSlice({
   name: "todoList",
   initialState,
@@ -147,10 +165,42 @@ export const todoListSlice = createSlice({
     switchTodoList: switchTodoListReducer,
     newTodoItem: newTodoItemReducer,
     toggleItemState: toggleItemStateReducer,
+    updateTodoItem: updateTodoItemReducer,
   },
 });
 
 export default todoListSlice.reducer;
+
+export const selectCurrentTodoListOwner = (state: RootState) =>
+  state.todoList.currentTodoListOwner;
+
+export const selectCurrentTodoListKey = (state: RootState) =>
+  state.todoList.currentTodoListKey;
+
+export const selectTodoLists = (state: RootState) => state.todoList.todoLists;
+
+export const selectCurrentTodoList = createSelector(
+  [selectTodoLists, selectCurrentTodoListOwner, selectCurrentTodoListKey],
+  (todoLists, owner, currentKey) => {
+    return todoLists?.[owner]?.[currentKey];
+  }
+);
+
+export const selectCurrentTodoItems = createSelector(
+  selectCurrentTodoList,
+  (todoList) => {
+    return todoList.todoItems;
+  }
+);
+
+export const selectCurrentListTodoItemById = (todoItemId: TodoItem["id"]) =>
+  createSelector(selectCurrentTodoList, (currentTodoList) => {
+    const searchResult = currentTodoList.todoItems.filter(
+      (item) => item.id === todoItemId
+    );
+    if (searchResult.length !== 0) return searchResult[0];
+    return;
+  });
 
 export const {
   restoreTodoLists,
@@ -158,6 +208,7 @@ export const {
   newTodoItem,
   toggleItemState,
   switchTodoList,
+  updateTodoItem,
 } = todoListSlice.actions;
 
 export const addTodoList =
@@ -203,24 +254,24 @@ export const addTodoItemToServer =
     });
   };
 
-export const selectCurrentTodoListOwner = (state: RootState) =>
-  state.todoList.currentTodoListOwner;
+export type UpdateTodoItemInput = {
+  targetOwner: UserEmail;
+  targetTodoListKey: TodoListKey;
+  updateTodoItem: TodoItem;
+};
 
-export const selectCurrentTodoListKey = (state: RootState) =>
-  state.todoList.currentTodoListKey;
+export const updateTodoItemToServer =
+  (todoItemId: TodoItem["id"]): AppThunk =>
+  async (dispatch, getState) => {
+    const rootState = getState();
+    const targetTodoListKey = rootState.todoList.currentTodoListKey;
+    const targetOwner = rootState.todoList.currentTodoListOwner;
+    const updateTodoItem = selectCurrentListTodoItemById(todoItemId)(rootState);
 
-export const selectTodoLists = (state: RootState) => state.todoList.todoLists;
-
-export const selectCurrentTodoList = createSelector(
-  [selectTodoLists, selectCurrentTodoListOwner, selectCurrentTodoListKey],
-  (todoLists, owner, currentKey) => {
-    return todoLists?.[owner]?.[currentKey];
-  }
-);
-
-export const selectCurrentTodoItems = createSelector(
-  selectCurrentTodoList,
-  (todoList) => {
-    return todoList.todoItems;
-  }
-);
+    if (updateTodoItem)
+      socket.emit("updateTodoItem", {
+        targetTodoListKey,
+        targetOwner,
+        updateTodoItem,
+      });
+  };

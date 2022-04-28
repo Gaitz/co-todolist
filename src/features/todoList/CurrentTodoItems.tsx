@@ -3,6 +3,7 @@ import {
   selectCurrentTodoItems,
   toggleItemState,
   TodoItem,
+  updateTodoItemToServer,
 } from "./todoListSlice";
 import styles from "./todoList.module.css";
 import { useAppDispatch } from "@shared/store";
@@ -15,6 +16,7 @@ const CurrentTodoItems = () => {
     (itemId: TodoItem["id"]) => (event: React.SyntheticEvent) => {
       event.stopPropagation();
       dispatch(toggleItemState({ itemId }));
+      dispatch(updateTodoItemToServer(itemId));
     };
 
   return (

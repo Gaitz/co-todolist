@@ -4,9 +4,11 @@ import {
   newTodoListTo,
   TodoListKey,
   TodoLists,
-  NewTodoItemInputs,
+  NewTodoItemInput,
   newTodoItemTo,
   TodoListMetadata,
+  UpdateTodoItemInput,
+  updateTodoItemTo,
 } from "@todoLists/todoListSlice";
 import { UserEmail } from "@userAuthentication/userAuthenticationSlice";
 import { socketServer } from "src/pages/api/socket";
@@ -15,7 +17,12 @@ export type ClientToServerEvents = {
   helloToServer: (msg: string) => void;
   signIn: (userEmail: string, res: (todoLists: TodoLists) => void) => void;
   addTodoList: (owner: UserEmail) => void;
-  addTodoItem: (data: Omit<NewTodoItemInputs, "id">) => void;
+  addTodoItem: (data: Omit<NewTodoItemInput, "id">) => void;
+  updateTodoItem: ({
+    targetOwner,
+    targetTodoListKey,
+    updateTodoItem,
+  }: UpdateTodoItemInput) => void;
 };
 
 let persistedTodoLists: TodoLists = { todoLists: {} };
@@ -53,7 +60,7 @@ export const onConnection = (
     "addTodoItem",
     ({ creator, description, targetListKey, targetOwner }) => {
       const todoItemId = targetListKey + new Date().toISOString();
-      const newTodoItemInput: NewTodoItemInputs = {
+      const newTodoItemInput: NewTodoItemInput = {
         creator,
         description,
         id: todoItemId,
@@ -67,4 +74,14 @@ export const onConnection = (
       console.log("create todo item,", creator, description);
     }
   );
+
+  socket.on("updateTodoItem", (updateTodoItemInput) => {
+    const { targetOwner, targetTodoListKey, updateTodoItem } =
+      updateTodoItemInput;
+
+    socket.broadcast.emit("updateTodoItem", updateTodoItemInput);
+
+    updateTodoItemTo(updateTodoItemInput)(persistedTodoLists);
+    console.log("update", targetOwner, targetTodoListKey, updateTodoItem);
+  });
 };
